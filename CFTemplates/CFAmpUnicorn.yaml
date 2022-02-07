@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Unicorn Workshop'
+
+Resources:  
+  App:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: wildrydes-site
+      Repository: https://git-codecommit.us-east-1.amazonaws.com/v1/repos/wildrydes-site
+      BuildSpec: |
+        version: 1
+        frontend:
+          phases:
+            # IMPORTANT - Please verify your build commands
+            build:
+              commands: []
+          artifacts:
+            # IMPORTANT - Please verify your build output directory
+            baseDirectory: /
+            files:
+              - '**/*'
+          cache:
+            paths: []
+      IAMServiceRole: !GetAtt AmplifyAdminRole.Arn
+
+  WildRydesCodeCommitRepo:
+    Type: AWS::Amplify::Branch
+    Properties: 
+      BranchName: master
+      AppId: !GetAtt App.AppId
+      EnableAutoBuild: True
+      
+  AmplifyAdminRole:
+    Type: 'AWS::IAM::Role'
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - amplify.amazonaws.com
+            Action: 
+              - sts:AssumeRole
+      Description: 'Allows Amplify Backend Deployment to access AWS resources on your behalf.'
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AdministratorAccess-Amplify
+      MaxSessionDuration: 3600
+      Path: /
+      RoleName: Amplify-Admin-Role
+      Tags: 
+        - Key: Project
+          Value: UnicornWorkshop      
